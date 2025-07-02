@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, IsOptional, IsEnum, IsArray, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PostStatus } from '@prisma/client';
 
 export class CreatePostDto {
@@ -84,14 +85,17 @@ export class PostQueryDto {
     tag?: string;
 
     @IsOptional()
+    @Type(() => Number)
     @IsInt()
     userId?: number;
 
     @IsOptional()
+    @Type(() => Number)
     @IsInt()
     page?: number = 1;
 
     @IsOptional()
+    @Type(() => Number)
     @IsInt()
     limit?: number = 10;
 
