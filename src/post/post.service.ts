@@ -378,6 +378,8 @@ export class PostService {
   async getPostsByUser(userId: number, status?: PostStatus) {
     const where: Prisma.PostWhereInput = { userId };
     
+    // Only filter by status if explicitly provided
+    // This allows getting all posts (DRAFT + PUBLISHED) for own profile
     if (status) {
       where.status = status;
     }
