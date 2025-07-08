@@ -375,7 +375,9 @@ export class PostService {
     }
   }
 
-  async getPostsByUser(userId: number, status?: PostStatus) {
+  async getPostsByUser(userId: number, status?: PostStatus, page?: number, limit?: number) {
+    const currentPage = page || 1;
+    const currentLimit = limit || 10;
     const where: Prisma.PostWhereInput = { userId };
     
     // Only filter by status if explicitly provided
@@ -384,30 +386,47 @@ export class PostService {
       where.status = status;
     }
 
-    return this.prisma.post.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
+    const skip = (currentPage - 1) * currentLimit;
+
+    const [posts, total] = await Promise.all([
+      this.prisma.post.findMany({
+        where,
+        skip,
+        take: currentLimit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+            },
+          },
+          tags: true,
+          _count: {
+            select: {
+              comments: true,
+              likes: true,
+            },
           },
         },
-        tags: true,
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-          },
+        orderBy: {
+          createdAt: 'desc',
         },
+      }),
+      this.prisma.post.count({ where }),
+    ]);
+
+    return {
+      posts,
+      pagination: {
+        page: currentPage,
+        limit: currentLimit,
+        total,
+        totalPages: Math.ceil(total / currentLimit),
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    };
   }
 
   async getTags() {

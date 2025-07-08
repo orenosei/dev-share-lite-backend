@@ -38,8 +38,10 @@ export class PostController {
   async getPostsByUser(
     @Param('userId', ParseIntPipe) userId: number,
     @Query('status') status?: PostStatus,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
-    return this.postService.getPostsByUser(userId, status);
+    return this.postService.getPostsByUser(userId, status, page, limit);
   }
 
   @Get(':id')
