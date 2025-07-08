@@ -452,6 +452,11 @@ export class CommentService {
                 avatarUrl: true,
               },
             },
+            likes: {
+              select: {
+                userId: true,
+              },
+            },
             _count: {
               select: {
                 likes: true,
@@ -461,6 +466,11 @@ export class CommentService {
           },
           orderBy: {
             createdAt: 'asc',
+          },
+        },
+        likes: {
+          select: {
+            userId: true,
           },
         },
         _count: {
