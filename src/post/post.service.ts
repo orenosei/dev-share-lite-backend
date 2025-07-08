@@ -385,6 +385,15 @@ export class PostService {
     return this.prisma.post.findMany({
       where,
       include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
         tags: true,
         _count: {
           select: {
