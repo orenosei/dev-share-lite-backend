@@ -8,7 +8,8 @@ import {
   Delete, 
   ParseIntPipe,
   HttpCode,
-  HttpStatus 
+  HttpStatus,
+  Query 
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dtos/user.dto';
@@ -18,8 +19,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  async findAll() {
-    return this.userService.findAll();
+  async findAll(@Query('search') search?: string) {
+    return this.userService.findAll(search);
   }
 
   @Get(':id')

@@ -71,7 +71,11 @@ export class PostService {
       search,
       status,
       tag,
+      tags,
       userId,
+      author,
+      dateFrom,
+      dateTo,
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
@@ -93,7 +97,7 @@ export class PostService {
     if (status) {
       where.status = status;
     } else {
-      // Only show published posts by default for public listing
+      // Only show published posts by default for public listing (unless explicitly searching for drafts)
       where.status = 'PUBLISHED';
     }
 
@@ -101,11 +105,61 @@ export class PostService {
       where.userId = userId;
     }
 
+    // Search by author username
+    if (author) {
+      where.user = {
+        username: { contains: author, mode: 'insensitive' },
+      };
+    }
+
+    // Single tag filter
     if (tag) {
       where.tags = {
         some: {
           name: { equals: tag, mode: 'insensitive' },
         },
+      };
+    }
+
+    // Multiple tags filter
+    if (tags) {
+      const tagArray = Array.isArray(tags) ? tags : tags.split(',');
+      where.tags = {
+        some: {
+          name: { in: tagArray.map(t => t.trim().toLowerCase()) },
+        },
+      };
+    }
+
+    // Date range filter
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) {
+        where.createdAt.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        where.createdAt.lte = new Date(dateTo);
+      }
+    }
+
+    // Build orderBy clause
+    let orderBy: any = {};
+    
+    if (sortBy === 'comments') {
+      orderBy = {
+        comments: {
+          _count: sortOrder,
+        },
+      };
+    } else if (sortBy === 'likes') {
+      orderBy = {
+        likes: {
+          _count: sortOrder,
+        },
+      };
+    } else {
+      orderBy = {
+        [sortBy]: sortOrder,
       };
     }
 
@@ -115,9 +169,7 @@ export class PostService {
         where,
         skip,
         take: limit,
-        orderBy: {
-          [sortBy]: sortOrder,
-        },
+        orderBy,
         include: {
           user: {
             select: {

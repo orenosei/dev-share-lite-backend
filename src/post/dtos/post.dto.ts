@@ -85,6 +85,22 @@ export class PostQueryDto {
     tag?: string;
 
     @IsOptional()
+    @IsString()
+    tags?: string;
+
+    @IsOptional()
+    @IsString()
+    author?: string;
+
+    @IsOptional()
+    @IsString()
+    dateFrom?: string;
+
+    @IsOptional()
+    @IsString()
+    dateTo?: string;
+
+    @IsOptional()
     @Type(() => Number)
     @IsInt()
     userId?: number;

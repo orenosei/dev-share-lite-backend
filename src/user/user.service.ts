@@ -7,8 +7,20 @@ import { UpdateUserDto } from './dtos/user.dto';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<Omit<User, 'password'>[]> {
+  async findAll(search?: string): Promise<Omit<User, 'password'>[]> {
+    const where: Prisma.UserWhereInput = {};
+    
+    if (search) {
+      where.OR = [
+        { username: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
     const users = await this.prisma.user.findMany({
+      where,
       select: {
         id: true,
         username: true,
