@@ -92,6 +92,9 @@ export class PostService {
 
     if (status) {
       where.status = status;
+    } else {
+      // Only show published posts by default for public listing
+      where.status = 'PUBLISHED';
     }
 
     if (userId) {
