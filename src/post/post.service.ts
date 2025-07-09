@@ -151,11 +151,16 @@ export class PostService {
           _count: sortOrder,
         },
       };
-    } else if (sortBy === 'likes') {
+    } else if (sortBy === 'likes' || sortBy === 'likesCount') {
       orderBy = {
         likes: {
           _count: sortOrder,
         },
+      };
+    } else if (sortBy === 'popular' || sortBy === 'popularity') {
+      // This will be handled separately in getPostsByPopularity
+      orderBy = {
+        createdAt: 'desc', // Default fallback
       };
     } else {
       orderBy = {
@@ -164,33 +169,42 @@ export class PostService {
     }
 
     // Get posts with counts
-    const [posts, total] = await Promise.all([
-      this.prisma.post.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              avatarUrl: true,
+    let posts;
+    let total;
+
+    if (sortBy === 'popular' || sortBy === 'popularity') {
+      // Use special popularity sorting
+      posts = await this.getPostsByPopularity(where, skip, limit);
+      total = await this.prisma.post.count({ where });
+    } else {
+      [posts, total] = await Promise.all([
+        this.prisma.post.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy,
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
+            tags: true,
+            _count: {
+              select: {
+                comments: true,
+                likes: true,
+              },
             },
           },
-          tags: true,
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-            },
-          },
-        },
-      }),
-      this.prisma.post.count({ where }),
-    ]);
+        }),
+        this.prisma.post.count({ where }),
+      ]);
+    }
 
     return {
       posts,
@@ -516,5 +530,89 @@ export class PostService {
     }
 
     return tagConnections;
+  }
+
+  private async getPostsByPopularity(
+    where: Prisma.PostWhereInput,
+    skip: number,
+    limit: number,
+  ) {
+    // For complex where conditions, we'll use the regular Prisma query
+    // but with a computed popularity field
+    const posts = await this.prisma.post.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+        tags: true,
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        likes: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          },
+        },
+      },
+    });
+
+    // Calculate popularity score and sort in memory
+    const postsWithScore = posts.map(post => {
+      const likesCount = post._count.likes;
+      const commentsCount = post._count.comments;
+      const daysSinceCreation = Math.floor(
+        (Date.now() - post.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      
+      // Popularity formula: (likes * 3) + (comments * 2) + recency bonus
+      const recencyBonus = Math.max(0, 30 - daysSinceCreation) * 0.5;
+      const popularityScore = (likesCount * 3) + (commentsCount * 2) + recencyBonus;
+      
+      return {
+        ...post,
+        popularityScore,
+      };
+    });
+
+    // Sort by popularity score
+    postsWithScore.sort((a, b) => {
+      if (b.popularityScore !== a.popularityScore) {
+        return b.popularityScore - a.popularityScore;
+      }
+      // If same score, sort by creation date (newer first)
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+
+    return postsWithScore;
   }
 }
