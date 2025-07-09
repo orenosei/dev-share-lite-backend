@@ -47,3 +47,13 @@ export class LoginDto {
     @IsNotEmpty()
     password: string;
 }
+
+export class ChangePasswordDto {
+    @IsNotEmpty()
+    @IsString()
+    currentPassword: string;
+
+    @IsNotEmpty()
+    @MinLength(6)
+    newPassword: string;
+}
