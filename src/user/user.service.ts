@@ -147,6 +147,66 @@ export class UserService {
     return updatedUser;
   }
 
+  async updateAvatar(id: number, avatarUrl: string): Promise<Omit<User, 'password'>> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { avatarUrl },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        bio: true,
+        avatarUrl: true,
+        phone: true,
+        address: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return updatedUser;
+  }
+
+  async deleteAvatar(id: number): Promise<Omit<User, 'password'>> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { avatarUrl: null },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        bio: true,
+        avatarUrl: true,
+        phone: true,
+        address: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return updatedUser;
+  }
+
   async remove(id: number): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id },

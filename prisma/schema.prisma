@@ -21,10 +21,10 @@ model User {
   createdAt DateTime  @default(now()) 
   updatedAt DateTime  @updatedAt 
   
-  posts     Post[]
-  comments  Comment[]
-  postLikes PostLike[]
-  commentLikes CommentLike[]
+  posts         Post[]
+  comments      Comment[]
+  postLikes     PostLike[]
+  commentLikes  CommentLike[]
 }
 
 model Post {
@@ -40,6 +40,7 @@ model Post {
   tags      Tag[]     
   comments  Comment[]
   likes     PostLike[]
+  images    PostImage[]
   
 
   @@index([userId])
@@ -103,4 +104,16 @@ model CommentLike {
   @@unique([userId, commentId], name: "user_comment_unique")
   @@index([commentId])
   @@index([createdAt])
+}
+
+model PostImage {
+  id        Int      @id @default(autoincrement())
+  url       String   @db.VarChar(500)  // Cloudinary URL
+  publicId  String   @db.VarChar(255)  // Cloudinary public_id for deletion
+  createdAt DateTime @default(now())
+
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
 }

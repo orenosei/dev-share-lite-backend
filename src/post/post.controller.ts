@@ -10,7 +10,11 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFiles,
+  BadRequestException,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { PostService } from './post.service';
 import { CreatePostDto, UpdatePostDto, PostQueryDto } from './dtos/post.dto';
 import { PostStatus } from '@prisma/client';
@@ -73,5 +77,38 @@ export class PostController {
     @Body('userId', ParseIntPipe) userId: number, 
   ) {
     return this.postService.likePost(id, userId);
+  }
+
+  @Post(':id/images')
+  @UseInterceptors(FilesInterceptor('images', 10)) 
+  async uploadImages(
+    @Param('id', ParseIntPipe) postId: number,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files uploaded');
+    }
+
+    // Validate file types
+    for (const file of files) {
+      if (!file.mimetype.startsWith('image/')) {
+        throw new BadRequestException(`File ${file.originalname} is not an image`);
+      }
+      
+      // Validate file size (5MB max per file)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new BadRequestException(`File ${file.originalname} is too large (max 5MB)`);
+      }
+    }
+
+    return this.postService.uploadImages(postId, files);
+  }
+
+  @Delete(':postId/images/:imageId')
+  async deleteImage(
+    @Param('postId', ParseIntPipe) postId: number,
+    @Param('imageId', ParseIntPipe) imageId: number,
+  ) {
+    return this.postService.deleteImage(postId, imageId);
   }
 }

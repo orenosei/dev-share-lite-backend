@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { Post, PostStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreatePostDto, UpdatePostDto, PostQueryDto } from './dtos/post.dto';
+import { CloudinaryService } from '../services/cloudinary.service';
 
 @Injectable()
 export class PostService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   async create(createPostDto: CreatePostDto): Promise<Post> {
     const { tags, ...postData } = createPostDto;
@@ -31,6 +35,14 @@ export class PostService {
           },
         },
         tags: true,
+        images: {
+          select: {
+            id: true,
+            url: true,
+            publicId: true,
+            createdAt: true,
+          },
+        },
         comments: {
           include: {
             user: {
@@ -194,6 +206,14 @@ export class PostService {
               },
             },
             tags: true,
+            images: {
+              select: {
+                id: true,
+                url: true,
+                publicId: true,
+                createdAt: true,
+              },
+            },
             _count: {
               select: {
                 comments: true,
@@ -231,6 +251,17 @@ export class PostService {
           },
         },
         tags: true,
+        images: {
+          select: {
+            id: true,
+            url: true,
+            publicId: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
         comments: {
           include: {
             user: {
@@ -470,6 +501,14 @@ export class PostService {
             },
           },
           tags: true,
+          images: {
+            select: {
+              id: true,
+              url: true,
+              publicId: true,
+              createdAt: true,
+            },
+          },
           _count: {
             select: {
               comments: true,
@@ -554,6 +593,14 @@ export class PostService {
           },
         },
         tags: true,
+        images: {
+          select: {
+            id: true,
+            url: true,
+            publicId: true,
+            createdAt: true,
+          },
+        },
         comments: {
           include: {
             user: {
@@ -614,5 +661,78 @@ export class PostService {
     });
 
     return postsWithScore;
+  }
+
+  async uploadImages(postId: number, files: Express.Multer.File[]): Promise<any> {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const uploadResults: any[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const uploadResult = await this.cloudinaryService.uploadPostImage(
+          file.buffer, 
+          postId, 
+          i
+        );
+        
+        const postImage = await this.prisma.postImage.create({
+          data: {
+            url: uploadResult.url,
+            publicId: uploadResult.publicId,
+            postId: postId,
+          },
+        });
+
+        uploadResults.push({
+          id: postImage.id,
+          url: postImage.url,
+          publicId: postImage.publicId,
+        });
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        throw new Error(`Failed to upload image: ${file.originalname}`);
+      }
+    }
+
+    return {
+      message: `Successfully uploaded ${uploadResults.length} images`,
+      images: uploadResults,
+    };
+  }
+
+  async deleteImage(postId: number, imageId: number): Promise<any> {
+    const image = await this.prisma.postImage.findFirst({
+      where: {
+        id: imageId,
+        postId: postId,
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+
+    try {
+      await this.cloudinaryService.deleteImage(image.publicId);
+      
+      await this.prisma.postImage.delete({
+        where: { id: imageId },
+      });
+
+      return {
+        message: 'Image deleted successfully',
+      };
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      throw new Error('Failed to delete image');
+    }
   }
 }
