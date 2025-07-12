@@ -52,7 +52,7 @@ export class CommentController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCommentDto: UpdateCommentDto,
-    @Query('userId', ParseIntPipe) userId: number, // In real app, this would come from JWT token
+    @Query('userId', ParseIntPipe) userId: number, 
   ) {
     return this.commentService.update(id, updateCommentDto, userId);
   }
@@ -61,7 +61,7 @@ export class CommentController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseIntPipe) id: number,
-    @Query('userId', ParseIntPipe) userId: number, // In real app, this would come from JWT token
+    @Query('userId', ParseIntPipe) userId: number, 
   ) {
     return this.commentService.remove(id, userId);
   }
@@ -69,7 +69,7 @@ export class CommentController {
   @Post(':id/like')
   async likeComment(
     @Param('id', ParseIntPipe) id: number,
-    @Body('userId', ParseIntPipe) userId: number, // In real app, this would come from JWT token
+    @Body('userId', ParseIntPipe) userId: number, 
   ) {
     return this.commentService.likeComment(id, userId);
   }

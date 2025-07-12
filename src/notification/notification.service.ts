@@ -6,9 +6,7 @@ import { NotificationType } from '@prisma/client';
 export class NotificationService {
   constructor(private prisma: PrismaService) {}
 
-  // Tạo thông báo khi có ai đó like post
   async createPostLikeNotification(postId: number, triggeredByUserId: number) {
-    // Lấy thông tin post để biết chủ post
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
       include: { user: true }
@@ -16,10 +14,8 @@ export class NotificationService {
 
     if (!post) return;
 
-    // Không tạo thông báo nếu người like chính là chủ post
     if (post.userId === triggeredByUserId) return;
 
-    // Kiểm tra xem đã có thông báo tương tự chưa (trong vòng 24h)
     const existingNotification = await this.prisma.notification.findFirst({
       where: {
         userId: post.userId,
@@ -34,7 +30,6 @@ export class NotificationService {
 
     if (existingNotification) return;
 
-    // Lấy tên người trigger
     const triggerUser = await this.prisma.user.findUnique({
       where: { id: triggeredByUserId }
     });
@@ -54,7 +49,6 @@ export class NotificationService {
     });
   }
 
-  // Tạo thông báo khi có ai đó comment vào post
   async createPostCommentNotification(postId: number, commentId: number, triggeredByUserId: number) {
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
@@ -63,7 +57,6 @@ export class NotificationService {
 
     if (!post) return;
 
-    // Không tạo thông báo nếu người comment chính là chủ post
     if (post.userId === triggeredByUserId) return;
 
     const triggerUser = await this.prisma.user.findUnique({
@@ -86,7 +79,6 @@ export class NotificationService {
     });
   }
 
-  // Tạo thông báo khi có ai đó like comment
   async createCommentLikeNotification(commentId: number, triggeredByUserId: number) {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId },
@@ -95,10 +87,8 @@ export class NotificationService {
 
     if (!comment) return;
 
-    // Không tạo thông báo nếu người like chính là chủ comment
     if (comment.userId === triggeredByUserId) return;
 
-    // Kiểm tra thông báo duplicate trong 24h
     const existingNotification = await this.prisma.notification.findFirst({
       where: {
         userId: comment.userId,
@@ -133,7 +123,6 @@ export class NotificationService {
     });
   }
 
-  // Tạo thông báo khi có ai đó reply comment
   async createCommentReplyNotification(parentCommentId: number, replyCommentId: number, triggeredByUserId: number) {
     const parentComment = await this.prisma.comment.findUnique({
       where: { id: parentCommentId },
@@ -142,7 +131,6 @@ export class NotificationService {
 
     if (!parentComment) return;
 
-    // Không tạo thông báo nếu người reply chính là chủ comment gốc
     if (parentComment.userId === triggeredByUserId) return;
 
     const triggerUser = await this.prisma.user.findUnique({
@@ -165,7 +153,6 @@ export class NotificationService {
     });
   }
 
-  // Lấy danh sách thông báo của user
   async getUserNotifications(userId: number, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
 
@@ -219,7 +206,6 @@ export class NotificationService {
     };
   }
 
-  // Đánh dấu thông báo đã đọc
   async markAsRead(notificationId: number, userId: number) {
     return this.prisma.notification.updateMany({
       where: {
@@ -232,7 +218,6 @@ export class NotificationService {
     });
   }
 
-  // Đánh dấu tất cả thông báo đã đọc
   async markAllAsRead(userId: number) {
     return this.prisma.notification.updateMany({
       where: {
@@ -245,7 +230,6 @@ export class NotificationService {
     });
   }
 
-  // Xóa thông báo
   async deleteNotification(notificationId: number, userId: number) {
     return this.prisma.notification.deleteMany({
       where: {
@@ -255,7 +239,6 @@ export class NotificationService {
     });
   }
 
-  // Lấy số lượng thông báo chưa đọc
   async getUnreadCount(userId: number) {
     return this.prisma.notification.count({
       where: {
@@ -265,13 +248,11 @@ export class NotificationService {
     });
   }
 
-  // Helper function để cắt ngắn text
   private truncateText(text: string, maxLength: number): string {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   }
 
-  // Xóa thông báo khi unlike post
   async removePostLikeNotification(postId: number, triggeredByUserId: number) {
     const post = await this.prisma.post.findUnique({
       where: { id: postId }
@@ -289,7 +270,6 @@ export class NotificationService {
     });
   }
 
-  // Xóa thông báo khi unlike comment
   async removeCommentLikeNotification(commentId: number, triggeredByUserId: number) {
     const comment = await this.prisma.comment.findUnique({
       where: { id: commentId }
