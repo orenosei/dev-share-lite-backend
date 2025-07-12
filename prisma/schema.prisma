@@ -21,10 +21,12 @@ model User {
   createdAt DateTime  @default(now()) 
   updatedAt DateTime  @updatedAt 
   
-  posts         Post[]
-  comments      Comment[]
-  postLikes     PostLike[]
-  commentLikes  CommentLike[]
+  posts                Post[]
+  comments             Comment[]
+  postLikes            PostLike[]
+  commentLikes         CommentLike[]
+  notifications        Notification[] @relation("UserNotifications")
+  triggeredNotifications Notification[] @relation("NotificationTriggeredBy")
 }
 
 model Post {
@@ -41,6 +43,7 @@ model Post {
   comments  Comment[]
   likes     PostLike[]
   images    PostImage[]
+  notifications Notification[]
   
 
   @@index([userId])
@@ -72,6 +75,7 @@ model Comment {
   parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[] @relation("CommentReplies")
   likes     CommentLike[]
+  notifications Notification[]
   
   @@index([userId])
   @@index([postId])
@@ -116,4 +120,37 @@ model PostImage {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
+}
+
+model Notification {
+  id          Int               @id @default(autoincrement())
+  type        NotificationType
+  message     String            @db.VarChar(500)
+  isRead      Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+
+  userId      Int
+  user        User              @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  triggeredBy Int?
+  triggerUser User?             @relation("NotificationTriggeredBy", fields: [triggeredBy], references: [id], onDelete: SetNull)
+
+  postId      Int?
+  post        Post?             @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  commentId   Int?
+  comment     Comment?          @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([postId])
+  @@index([commentId])
+}
+
+enum NotificationType {
+  POST_LIKE
+  POST_COMMENT
+  COMMENT_LIKE
+  COMMENT_REPLY
 }

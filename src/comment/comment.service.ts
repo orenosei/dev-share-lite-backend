@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { Comment, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateCommentDto, UpdateCommentDto, CommentQueryDto } from './dtos/comment.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class CommentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+  ) {}
 
   async create(createCommentDto: CreateCommentDto): Promise<Comment> {
     // Check if post exists
@@ -85,6 +89,20 @@ export class CommentService {
         },
       },
     });
+
+    if (createCommentDto.parentId) {
+      await this.notificationService.createCommentReplyNotification(
+        createCommentDto.parentId,
+        comment.id,
+        createCommentDto.userId
+      );
+    } else {
+      await this.notificationService.createPostCommentNotification(
+        createCommentDto.postId,
+        comment.id,
+        createCommentDto.userId
+      );
+    }
 
     return comment;
   }
@@ -403,6 +421,8 @@ export class CommentService {
         },
       });
 
+      await this.notificationService.removeCommentLikeNotification(commentId, userId);
+
       return { message: 'Comment unliked successfully', liked: false };
     } else {
       // Like
@@ -412,6 +432,8 @@ export class CommentService {
           commentId,
         },
       });
+
+      await this.notificationService.createCommentLikeNotification(commentId, userId);
 
       return { message: 'Comment liked successfully', liked: true };
     }

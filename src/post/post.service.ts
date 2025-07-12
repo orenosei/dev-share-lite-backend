@@ -3,12 +3,14 @@ import { Post, PostStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreatePostDto, UpdatePostDto, PostQueryDto } from './dtos/post.dto';
 import { CloudinaryService } from '../services/cloudinary.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class PostService {
   constructor(
     private prisma: PrismaService,
     private cloudinaryService: CloudinaryService,
+    private notificationService: NotificationService,
   ) {}
 
   async create(createPostDto: CreatePostDto): Promise<Post> {
@@ -458,6 +460,8 @@ export class PostService {
         },
       });
 
+      await this.notificationService.removePostLikeNotification(postId, userId);
+
       return { message: 'Post unliked successfully', liked: false };
     } else {
       // Like
@@ -467,6 +471,8 @@ export class PostService {
           postId,
         },
       });
+
+      await this.notificationService.createPostLikeNotification(postId, userId);
 
       return { message: 'Post liked successfully', liked: true };
     }
