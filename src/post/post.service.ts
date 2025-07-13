@@ -478,9 +478,10 @@ export class PostService {
     }
   }
 
-  async getPostsByUser(userId: number, status?: PostStatus, page?: number, limit?: number) {
-    const currentPage = page || 1;
-    const currentLimit = limit || 10;
+  async getPostsByUser(userId: number, options: any = {}) {
+    const { page = 1, limit = 10, status, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+    const currentPage = page;
+    const currentLimit = limit;
     const where: Prisma.PostWhereInput = { userId };
     
     // Only filter by status if explicitly provided
@@ -490,6 +491,26 @@ export class PostService {
     }
 
     const skip = (currentPage - 1) * currentLimit;
+
+    // Build orderBy clause
+    let orderBy: any = {};
+    if (sortBy === 'comments') {
+      orderBy = {
+        comments: {
+          _count: sortOrder,
+        },
+      };
+    } else if (sortBy === 'likes' || sortBy === 'likesCount') {
+      orderBy = {
+        likes: {
+          _count: sortOrder,
+        },
+      };
+    } else {
+      orderBy = {
+        [sortBy]: sortOrder,
+      };
+    }
 
     const [posts, total] = await Promise.all([
       this.prisma.post.findMany({
@@ -515,6 +536,29 @@ export class PostService {
               createdAt: true,
             },
           },
+          comments: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  firstName: true,
+                  lastName: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+          likes: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                },
+              },
+            },
+          },
           _count: {
             select: {
               comments: true,
@@ -522,20 +566,141 @@ export class PostService {
             },
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy,
       }),
       this.prisma.post.count({ where }),
     ]);
 
+    const totalPages = Math.ceil(total / currentLimit);
+
     return {
-      posts,
-      pagination: {
-        page: currentPage,
-        limit: currentLimit,
-        total,
-        totalPages: Math.ceil(total / currentLimit),
+      success: true,
+      data: {
+        posts,
+        pagination: {
+          page: currentPage,
+          limit: currentLimit,
+          total,
+          totalPages,
+        },
+      },
+    };
+  }
+
+  async getLikedPostsByUser(userId: number, options: any = {}) {
+    const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+    const currentPage = page;
+    const currentLimit = limit;
+    const skip = (currentPage - 1) * currentLimit;
+
+    // Build orderBy clause  
+    let orderBy: any = {};
+    if (sortBy === 'comments') {
+      orderBy = {
+        comments: {
+          _count: sortOrder,
+        },
+      };
+    } else if (sortBy === 'likes' || sortBy === 'likesCount') {
+      orderBy = {
+        likes: {
+          _count: sortOrder,
+        },
+      };
+    } else {
+      orderBy = {
+        [sortBy]: sortOrder,
+      };
+    }
+
+    // Find posts that the user has liked
+    const [likedPosts, total] = await Promise.all([
+      this.prisma.post.findMany({
+        where: {
+          likes: {
+            some: {
+              userId: userId,
+            },
+          },
+          status: 'PUBLISHED', // Only show published posts
+        },
+        skip,
+        take: currentLimit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+            },
+          },
+          tags: true,
+          images: {
+            select: {
+              id: true,
+              url: true,
+              publicId: true,
+              createdAt: true,
+            },
+          },
+          comments: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  firstName: true,
+                  lastName: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+          likes: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+              likes: true,
+            },
+          },
+        },
+        orderBy,
+      }),
+      this.prisma.post.count({
+        where: {
+          likes: {
+            some: {
+              userId: userId,
+            },
+          },
+          status: 'PUBLISHED',
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / currentLimit);
+
+    return {
+      success: true,
+      data: {
+        posts: likedPosts,
+        pagination: {
+          page: currentPage,
+          limit: currentLimit,
+          total,
+          totalPages,
+        },
       },
     };
   }

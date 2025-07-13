@@ -41,11 +41,41 @@ export class PostController {
   @Get('user/:userId')
   async getPostsByUser(
     @Param('userId', ParseIntPipe) userId: number,
-    @Query('status') status?: PostStatus,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc'
   ) {
-    return this.postService.getPostsByUser(userId, status, page, limit);
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    
+    return this.postService.getPostsByUser(userId, {
+      page: pageNumber,
+      limit: limitNumber,
+      status: status as PostStatus,
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc'
+    });
+  }
+
+  @Get('user/:userId/liked')
+  async getLikedPostsByUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc'
+  ) {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    
+    return this.postService.getLikedPostsByUser(userId, {
+      page: pageNumber,
+      limit: limitNumber,
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc'
+    });
   }
 
   @Get(':id')
