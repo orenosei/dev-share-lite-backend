@@ -1,98 +1,306 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# DevShareLite Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+DevShareLite Backend is a RESTful API built with NestJS and PostgreSQL for a developer knowledge sharing platform.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+- **User Authentication**: JWT-based authentication system
+- **Post Management**: Create, read, update, delete posts with markdown support
+- **Comment System**: Nested comments with like functionality
+- **Notification System**: Real-time notifications for user interactions
+- **File Upload**: Image upload with Cloudinary integration
+- **Database**: PostgreSQL with Prisma ORM
+- **Validation**: Request validation with class-validator
+- **Testing**: Unit and E2E tests with Jest
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🛠️ Tech Stack
 
-## Project setup
+- **Framework**: NestJS 11.0.1
+- **Database**: PostgreSQL
+- **ORM**: Prisma 6.11.0
+- **Authentication**: JWT (@nestjs/jwt)
+- **File Upload**: Multer + Cloudinary
+- **Validation**: Class Validator & Class Transformer
+- **Password Hashing**: bcrypt
+- **Testing**: Jest
 
+## 📋 System Requirements
+
+- Node.js 18.0.0 or higher
+- PostgreSQL 13 or higher
+- npm or yarn
+
+## 🔧 Installation
+
+1. **Clone repository**
 ```bash
-$ npm install
+git clone <repository-url>
+cd dev-share-lite-backend
 ```
 
-## Compile and run the project
-
+2. **Install dependencies**
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+3. **Environment Setup**
+Create a `.env` file in the root directory:
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/devshare_lite"
 
-```bash
-# unit tests
-$ npm run test
+# JWT
+JWT_SECRET="your-super-secret-jwt-key"
+JWT_EXPIRES_IN="7d"
 
-# e2e tests
-$ npm run test:e2e
+# Frontend URL for CORS
+FRONTEND_URL="http://localhost:3000"
 
-# test coverage
-$ npm run test:cov
+# Cloudinary (for file uploads)
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+
+# Server Port
+PORT=4000
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+4. **Database Setup**
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Generate Prisma Client
+npx prisma generate
+
+# Run database migrations
+npx prisma migrate dev
+
+# (Optional) Seed database
+npx prisma db seed
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 📝 Scripts
 
-## Resources
+```bash
+# Development
+npm run start:dev
 
-Check out a few resources that may come in handy when working with NestJS:
+# Production build
+npm run build
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Start production server
+npm run start:prod
 
-## Support
+# Linting
+npm run lint
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Testing
+npm run test
+npm run test:e2e
+npm run test:cov
 
-## Stay in touch
+# Prisma commands
+npx prisma generate
+npx prisma migrate dev
+npx prisma studio
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 📁 Project Structure
 
-## License
+```
+src/
+├── auth/                   # Authentication module
+│   ├── auth.controller.ts  # Auth endpoints
+│   ├── auth.service.ts     # Auth business logic
+│   ├── auth.guard.ts       # JWT authentication guard
+│   └── dtos/               # Auth DTOs
+├── user/                   # User management
+│   ├── user.controller.ts  # User endpoints
+│   ├── user.service.ts     # User business logic
+│   └── dtos/               # User DTOs
+├── post/                   # Post management
+│   ├── post.controller.ts  # Post endpoints
+│   ├── post.service.ts     # Post business logic
+│   └── dtos/               # Post DTOs
+├── comment/                # Comment system
+│   ├── comment.controller.ts
+│   ├── comment.service.ts
+│   └── dtos/
+├── notification/           # Notification system
+│   ├── notification.controller.ts
+│   ├── notification.service.ts
+│   └── dtos/
+├── services/               # Shared services
+│   ├── cloudinary.service.ts
+│   └── upload.controller.ts
+├── prisma.service.ts       # Prisma database service
+├── app.module.ts           # Root application module
+└── main.ts                 # Application entry point
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🗄️ Database Schema
+
+### User
+- User authentication and profile management
+- Fields: id, username, email, password, firstName, lastName, bio, avatarUrl, phone, address
+
+### Post
+- Blog posts with markdown content
+- Fields: id, title, content, excerpt, featuredImage, authorId, createdAt, updatedAt
+- Relations: User (author), Comments, PostLikes, PostImages
+
+### Comment
+- Nested comment system
+- Fields: id, content, postId, authorId, parentId, createdAt, updatedAt
+- Relations: Post, User (author), parent/child comments, CommentLikes
+
+### Notification
+- Real-time notification system
+- Fields: id, type, message, userId, triggeredById, relatedPostId, isRead, createdAt
+
+## 🔐 Authentication
+
+The API uses JWT (JSON Web Tokens) for authentication:
+
+1. **Register**: `POST /auth/register`
+2. **Login**: `POST /auth/login`
+3. **Profile**: `GET /auth/me` (requires JWT token)
+
+### Usage
+```bash
+# Register
+curl -X POST http://localhost:4000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"john","email":"john@example.com","password":"password123"}'
+
+# Login
+curl -X POST http://localhost:4000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"john@example.com","password":"password123"}'
+
+# Access protected routes
+curl -X GET http://localhost:4000/auth/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## 📡 API Endpoints
+
+### Authentication
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/me` - Get current user profile
+
+### Users
+- `GET /users` - Get all users
+- `GET /users/:id` - Get user by ID
+- `PUT /users/:id` - Update user profile
+- `DELETE /users/:id` - Delete user
+
+### Posts
+- `GET /posts` - Get all posts (with pagination)
+- `GET /posts/:id` - Get post by ID
+- `POST /posts` - Create new post (auth required)
+- `PUT /posts/:id` - Update post (auth required)
+- `DELETE /posts/:id` - Delete post (auth required)
+- `POST /posts/:id/like` - Like/unlike post (auth required)
+
+### Comments
+- `GET /posts/:postId/comments` - Get post comments
+- `POST /posts/:postId/comments` - Create comment (auth required)
+- `PUT /comments/:id` - Update comment (auth required)
+- `DELETE /comments/:id` - Delete comment (auth required)
+- `POST /comments/:id/like` - Like/unlike comment (auth required)
+
+### Notifications
+- `GET /notifications` - Get user notifications (auth required)
+- `PUT /notifications/:id/read` - Mark notification as read (auth required)
+
+### Upload
+- `POST /upload/image` - Upload image to Cloudinary (auth required)
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+
+# Watch mode
+npm run test:watch
+```
+
+## 🚀 Deployment
+
+### Environment Variables for Production
+```env
+DATABASE_URL="your-production-database-url"
+JWT_SECRET="your-super-secure-jwt-secret"
+FRONTEND_URL="https://your-frontend-domain.com"
+CLOUDINARY_CLOUD_NAME="your-cloudinary-cloud"
+CLOUDINARY_API_KEY="your-cloudinary-key"
+CLOUDINARY_API_SECRET="your-cloudinary-secret"
+PORT=4000
+```
+
+### Docker Deployment
+```dockerfile
+# Example Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+EXPOSE 4000
+CMD ["npm", "run", "start:prod"]
+```
+
+### Manual Deployment
+```bash
+# Build the application
+npm run build
+
+# Start production server
+npm run start:prod
+```
+
+## 🔧 Development
+
+### Adding New Features
+1. Create module: `nest g module feature-name`
+2. Create controller: `nest g controller feature-name`
+3. Create service: `nest g service feature-name`
+4. Add DTOs in `dtos/` folder
+5. Update database schema in `prisma/schema.prisma`
+6. Run migrations: `npx prisma migrate dev`
+
+### Database Migrations
+```bash
+# Create new migration
+npx prisma migrate dev --name migration-name
+
+# Reset database (development only)
+npx prisma migrate reset
+
+# Deploy migrations (production)
+npx prisma migrate deploy
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Create a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 📞 Contact
+
+Project Link: [https://github.com/orenosei/dev-share-lite-backend](https://github.com/orenosei/dev-share-lite-backend)
